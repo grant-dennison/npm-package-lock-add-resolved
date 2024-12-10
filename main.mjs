@@ -21,6 +21,7 @@ function fetchJson(url) {
 }
 
 async function fillResolved(name, p) {
+  console.log(`Retrieving metadata for ${name}@${p.version}`)
   const metadataUrl = `https://registry.npmjs.com/${name}/${p.version}`
   const metadata = await fetchJson(metadataUrl)
 
@@ -28,7 +29,7 @@ async function fillResolved(name, p) {
   p.integrity = metadata.dist.integrity
 }
 
-async function fillAllResolved(list) {
+async function fillAllResolved(list, recursive) {
   for (const packagePath in list) {
     if (packagePath === "") {
       continue
@@ -41,7 +42,7 @@ async function fillAllResolved(list) {
     const packageName = packagePath.replace(/^.*node_modules\/(?=.+?$)/, "")
     await fillResolved(packageName, p)
 
-    if (p.dependencies) {
+    if (recursive && p.dependencies) {
       await fillAllResolved(p.dependencies)
     }
   }
@@ -50,16 +51,20 @@ async function fillAllResolved(list) {
 const oldContents = await readFile("package-lock.json", "utf-8")
 const packageLock = JSON.parse(oldContents)
 
-await fillAllResolved(packageLock.packages ?? [])
-await fillAllResolved(packageLock.dependencies ?? [])
+console.log("Checking `packages` (v2/v3 package-lock.json)...")
+await fillAllResolved(packageLock.packages ?? [], false)
+console.log("Checking `dependencies` (v1 package-lock.json)...")
+await fillAllResolved(packageLock.dependencies ?? [], true)
 
 await writeFile("package-lock.json", JSON.stringify(packageLock, null, 2))
 
 try {
-  // npm install will validate and reformat
+  console.log("Running npm install to validate and reformat...")
   spawnSync("npm", ["install"], { stdio: "inherit", shell: true })
 } catch (e) {
   console.error("Rolling back package-lock.json changes")
   await writeFile("package-lock.json", oldContents)
   throw e
 }
+
+console.log("Done!")
