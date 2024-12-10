@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 import assert from "node:assert"
 import { spawnSync } from "node:child_process"
 import { readFile, writeFile } from "node:fs/promises"
