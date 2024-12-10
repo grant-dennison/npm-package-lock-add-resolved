@@ -1,0 +1,24 @@
+{
+  "name": "npm-package-lock-add-resolved",
+  "version": "1.0.0",
+  "description": "Add missing `resolved` and `integrity` fields to package-lock.json",
+  "main": "main.mjs",
+  "type": "module",
+  "bin": {
+    "npm-package-lock-add-resolved": "./main.mjs"
+  },
+  "files": [
+    "main.mjs"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "under-the-sun": "^2.1.1"
+  }
+}
