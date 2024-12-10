@@ -1,7 +1,12 @@
 {
   "name": "npm-package-lock-add-resolved",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "Add missing `resolved` and `integrity` fields to package-lock.json",
+  "homepage": "https://github.com/grant-dennison/npm-package-lock-add-resolved#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/grant-dennison/npm-package-lock-add-resolved.git"
+  },
   "main": "main.mjs",
   "type": "module",
   "bin": {
@@ -11,14 +16,15 @@
     "main.mjs"
   ],
   "engines": {
-    "node": ">=18"
+    "node": ">=16"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "format": "prettier --no-semi --write .",
+    "test": "cd test && rm -rf actual && cp -r input actual && cd actual && node ../../main.mjs && rm -rf node_modules && cd .. && diff -r expected actual"
   },
   "author": "",
   "license": "MIT",
   "devDependencies": {
-    "under-the-sun": "^2.1.1"
+    "prettier": "~3.4.2"
   }
 }

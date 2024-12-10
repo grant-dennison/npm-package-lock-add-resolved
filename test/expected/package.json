@@ -1,0 +1,8 @@
+{
+  "name": "test",
+  "private": true,
+  "version": "0.0.1",
+  "devDependencies": {
+    "under-the-sun": "^2.1.1"
+  }
+}
