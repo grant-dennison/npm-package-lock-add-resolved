@@ -42,7 +42,7 @@ async function fillAllResolved(list, recursive) {
       continue
     }
     const p = list[packagePath]
-    if (!p.resolved || !p.integrity) {
+    if (!p.inBundle && !p.bundled && (!p.resolved || !p.integrity)) {
       const packageName =
         p.name ||
         /^npm:(.+?)@.+$/.exec(p.version)?.[1] ||
