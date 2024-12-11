@@ -4,6 +4,8 @@ import { spawnSync } from "node:child_process"
 import { readFile, writeFile } from "node:fs/promises"
 import { get } from "node:https"
 
+let changesMade = false
+
 function fetchJson(url) {
   return new Promise((resolve, reject) => {
     get(url, (res) => {
@@ -35,12 +37,11 @@ async function fillAllResolved(list, recursive) {
       continue
     }
     const p = list[packagePath]
-    if (p.resolved && p.integrity) {
-      continue
+    if (!p.resolved || !p.integrity) {
+      const packageName = packagePath.replace(/^.*node_modules\/(?=.+?$)/, "")
+      await fillResolved(packageName, p)
+      changesMade = true
     }
-
-    const packageName = packagePath.replace(/^.*node_modules\/(?=.+?$)/, "")
-    await fillResolved(packageName, p)
 
     if (recursive && p.dependencies) {
       await fillAllResolved(p.dependencies)
@@ -56,15 +57,18 @@ await fillAllResolved(packageLock.packages ?? [], false)
 console.log("Checking `dependencies` (v1 package-lock.json)...")
 await fillAllResolved(packageLock.dependencies ?? [], true)
 
-await writeFile("package-lock.json", JSON.stringify(packageLock, null, 2))
+if (changesMade) {
+  const newContents = JSON.stringify(packageLock, null, 2) + "\n"
+  await writeFile("package-lock.json", newContents)
 
-try {
-  console.log("Running npm install to validate and reformat...")
-  spawnSync("npm", ["install"], { stdio: "inherit", shell: true })
-} catch (e) {
-  console.error("Rolling back package-lock.json changes")
-  await writeFile("package-lock.json", oldContents)
-  throw e
+  try {
+    console.log("Running npm install to validate and reformat...")
+    spawnSync("npm", ["install"], { stdio: "inherit", shell: true })
+  } catch (e) {
+    console.error("Rolling back package-lock.json changes")
+    await writeFile("package-lock.json", oldContents)
+    throw e
+  }
 }
 
 console.log("Done!")
