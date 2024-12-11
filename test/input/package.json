@@ -4,6 +4,7 @@
   "version": "0.0.1",
   "devDependencies": {
     "prettier": "~3.4.2",
-    "under-the-sun": "^2.1.1"
+    "under-the-sun": "^2.1.1",
+    "under-the-sun-alt": "npm:under-the-sun@^1.0.0"
   }
 }

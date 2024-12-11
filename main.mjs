@@ -14,7 +14,11 @@ function fetchJson(url) {
         data += chunk
       })
       res.on("end", () => {
-        resolve(JSON.parse(data))
+        if (res.statusCode === 200) {
+          resolve(JSON.parse(data))
+        } else {
+          reject(`${url} returned ${res.statusCode} ${res.statusMessage}`)
+        }
       })
 
       res.on("error", reject)
@@ -23,8 +27,9 @@ function fetchJson(url) {
 }
 
 async function fillResolved(name, p) {
-  console.log(`Retrieving metadata for ${name}@${p.version}`)
-  const metadataUrl = `https://registry.npmjs.com/${name}/${p.version}`
+  const version = p.version.replace(/^.*@/, "")
+  console.log(`Retrieving metadata for ${name}@${version}`)
+  const metadataUrl = `https://registry.npmjs.com/${name}/${version}`
   const metadata = await fetchJson(metadataUrl)
 
   p.resolved = metadata.dist.tarball
@@ -38,7 +43,10 @@ async function fillAllResolved(list, recursive) {
     }
     const p = list[packagePath]
     if (!p.resolved || !p.integrity) {
-      const packageName = packagePath.replace(/^.*node_modules\/(?=.+?$)/, "")
+      const packageName =
+        p.name ||
+        /^npm:(.+?)@.+$/.exec(p.version)?.[1] ||
+        packagePath.replace(/^.*node_modules\/(?=.+?$)/, "")
       await fillResolved(packageName, p)
       changesMade = true
     }
